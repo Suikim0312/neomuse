@@ -4455,3 +4455,9 @@ h1,h2,h3,h4,h5,h6 { color: #faf0dc !important; }
     .em-title { font-size: 1.25rem; }
     .em-meta-row { grid-template-columns: 1fr; }
 }
+
+/* Modal open — block scroll without breaking position:fixed */
+html.modal-open { overflow: hidden !important; }
+
+/* Exhibit card — ensure tap works on mobile */
+.exhibit-card { touch-action: manipulation; -webkit-tap-highlight-color: rgba(184,115,42,0.12); }

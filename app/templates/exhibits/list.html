@@ -93,9 +93,9 @@
 </div>
 
 <!-- Exhibit Detail Modal -->
-<div id="exhibitModal" class="exhibit-modal-overlay" onclick="closeExhibitModal(event)">
+<div id="exhibitModal" class="exhibit-modal-overlay">
     <div class="exhibit-modal-box">
-        <button class="exhibit-modal-close" onclick="closeExhibitModal()">&times;</button>
+        <button class="exhibit-modal-close" onclick="closeExhibitModal(); event.stopPropagation();">&times;</button>
         <div id="exhibitModalContent" class="exhibit-modal-inner">
             <div class="exhibit-modal-loading">
                 <div class="modal-spinner"></div>
@@ -120,7 +120,7 @@ async function openExhibitModal(id) {
     const content = document.getElementById('exhibitModalContent');
     content.innerHTML = '<div class="exhibit-modal-loading"><div class="modal-spinner"></div></div>';
     modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add('modal-open');
     try {
         const res = await fetch('/exhibits/' + id + '/detail');
         const d = await res.json();
@@ -164,14 +164,18 @@ async function openExhibitModal(id) {
     }
 }
 
-function closeExhibitModal(e) {
-    if (e && e.target !== document.getElementById('exhibitModal') && !e.target.closest('.exhibit-modal-close')) return;
+function closeExhibitModal() {
     document.getElementById('exhibitModal').classList.remove('open');
-    document.body.style.overflow = '';
+    document.documentElement.classList.remove('modal-open');
 }
 
+// Close on overlay background tap
+document.getElementById('exhibitModal').addEventListener('click', function(e) {
+    if (e.target === this) closeExhibitModal();
+});
+
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeExhibitModal({target: document.getElementById('exhibitModal')});
+    if (e.key === 'Escape') closeExhibitModal();
 });
 </script>
 {% endblock %}
