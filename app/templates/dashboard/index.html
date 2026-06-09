@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}{% if stats %}Аналитика{% else %}Главная{% endif %}{% endblock %}
+{% block page_title %}{% if stats %}<span data-i18n="page_analytics">Аналитика</span>{% else %}<span data-i18n="page_home">Главная</span>{% endif %}{% endblock %}
+{% block content %}
+
+{% if stats %}
+<!-- ===== ADMIN / MANAGER DASHBOARD ===== -->
+
+<div class="kpi-grid">
+    <div class="kpi-card kpi-blue">
+        <div class="kpi-icon"><img src="/static/icons/users.svg" alt=""></div>
+        <div class="kpi-body">
+            <div class="kpi-label" data-i18n="kpi_visitors">Посетителей</div>
+            <div class="kpi-value">{{ stats.total_visitors }}</div>
+        </div>
+    </div>
+    <div class="kpi-card kpi-green">
+        <div class="kpi-icon"><img src="/static/icons/tickets.svg" alt=""></div>
+        <div class="kpi-body">
+            <div class="kpi-label" data-i18n="kpi_tickets">Билетов продано</div>
+            <div class="kpi-value">{{ stats.total_tickets }}</div>
+        </div>
+    </div>
+    <div class="kpi-card kpi-violet">
+        <div class="kpi-icon"><img src="/static/icons/reports.svg" alt=""></div>
+        <div class="kpi-body">
+            <div class="kpi-label" data-i18n="kpi_revenue">Выручка</div>
+            <div class="kpi-value">{{ '%.0f'|format(stats.revenue) }} ₸</div>
+        </div>
+    </div>
+    <div class="kpi-card kpi-amber">
+        <div class="kpi-icon"><img src="/static/icons/dashboard.svg" alt=""></div>
+        <div class="kpi-body">
+            <div class="kpi-label" data-i18n="kpi_active">Активных польз.</div>
+            <div class="kpi-value">{{ stats.active_users }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="dash-grid">
+
+    <div class="panel dash-panel">
+        <div class="panel-header">
+            <h3 data-i18n="dash_ticket_status">Статус билетов</h3>
+            <a href="/tickets" class="panel-link" data-i18n="dash_all_tickets">Все билеты →</a>
+        </div>
+        <div class="status-bars">
+            {% for status, count in stats.tickets_by_status.items() %}
+            <div class="status-bar-row">
+                <span class="status-dot s-{{ status }}"></span>
+                <span class="status-label">{{ ticket_status_labels[status] }}</span>
+                <div class="status-bar-track">
+                    <div class="status-bar-fill s-{{ status }}" style="width:{% if stats.total_tickets > 0 %}{{ [((count / stats.total_tickets) * 100)|int, 4]|max }}{% else %}4{% endif %}%"></div>
+                </div>
+                <span class="status-count">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel dash-panel">
+        <div class="panel-header">
+            <h3 data-i18n="dash_upcoming">Ближайшие экскурсии</h3>
+            <a href="/excursions" class="panel-link" data-i18n="dash_all_exc">Все →</a>
+        </div>
+        {% if stats.upcoming_excursions %}
+        <div class="excursion-list">
+            {% for e in stats.upcoming_excursions %}
+            <div class="excursion-row">
+                <div class="excursion-dot"></div>
+                <div class="excursion-info">
+                    <div class="excursion-title">{{ e.title }}</div>
+                    <div class="excursion-time">{{ e.start_time[:16].replace('T', ' ') }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-sm">
+            <img src="/static/icons/calendar.svg" alt="">
+            <span data-i18n="dash_no_exc">Нет запланированных экскурсий</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="panel dash-panel dash-wide">
+        <div class="panel-header"><h3 data-i18n="dash_chart">Бронирования за 7 дней</h3></div>
+        {% if stats.bookings_per_day %}
+        <div class="booking-chart">
+            {% set max_count = stats.bookings_per_day | map(attribute='count') | max %}
+            {% for row in stats.bookings_per_day %}
+            <div class="bar-col">
+                <div class="bar-wrap">
+                    <div class="bar-fill" style="height:{% if max_count > 0 %}{{ [((row.count / max_count) * 100)|int, 4]|max }}{% else %}4{% endif %}%" title="{{ row.count }}"></div>
+                </div>
+                <div class="bar-label">{{ row.date[-5:] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-sm">
+            <img src="/static/icons/calendar.svg" alt="">
+            <span data-i18n="dash_no_data">Нет данных за последние 7 дней</span>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="panel">
+    <div class="panel-header"><h3 data-i18n="dash_quick">Быстрые действия</h3></div>
+    <div class="quick-actions">
+        <a href="/exhibits/new" class="qa-btn"><img src="/static/icons/exhibits.svg" alt=""><span data-i18n="qa_new_exhibit">Новый экспонат</span></a>
+        <a href="/excursions"   class="qa-btn"><img src="/static/icons/excursions.svg" alt=""><span data-i18n="qa_excursions">Экскурсии</span></a>
+        <a href="/reports"      class="qa-btn"><img src="/static/icons/reports.svg" alt=""><span data-i18n="qa_reports">Отчёты</span></a>
+        <a href="/users"        class="qa-btn"><img src="/static/icons/users.svg" alt=""><span data-i18n="qa_users">Пользователи</span></a>
+    </div>
+</div>
+
+{% else %}
+<!-- ===== VISITOR / GUIDE DASHBOARD ===== -->
+
+<div class="welcome-hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="welcome-hero-text">
+        <div class="welcome-eyebrow" data-i18n="role_{{ user.role.value }}">{{ role_labels[user.role.value] }}</div>
+        <h2 class="welcome-title"><span data-i18n="lbl_welcome_greeting">Добро пожаловать,</span><br>{{ user.full_name }}!</h2>
+        <p class="welcome-sub" data-i18n="lbl_welcome_sub">Откройте коллекцию музея, забронируйте билет или запишитесь на экскурсию.</p>
+        <div class="welcome-actions">
+            <a href="/exhibits"     class="btn btn-hero-primary" data-i18n="btn_view_exhibits">Смотреть экспонаты</a>
+            <a href="/tickets/book" class="btn btn-hero-outline" data-i18n="btn_buy_ticket">Купить билет</a>
+        </div>
+    </div>
+    <div class="welcome-hero-art" aria-hidden="true">
+        <div class="hero-art-inner">
+            <div class="hero-circle c1"></div>
+            <div class="hero-circle c2"></div>
+            <div class="hero-circle c3"></div>
+            <div class="hero-icon-center">
+                <img src="/static/icons/museum.svg" class="hero-museum-icon" alt="">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="quick-tiles">
+    <a href="/exhibits"  class="quick-tile">
+        <div class="tile-icon tile-icon-blue"><img src="/static/icons/exhibits.svg" alt=""></div>
+        <div class="tile-label" data-i18n="tile_exhibits">Экспонаты</div>
+        <div class="tile-sub" data-i18n="tile_exhibits_sub">Коллекция музея</div>
+    </a>
+    <a href="/tickets"   class="quick-tile">
+        <div class="tile-icon tile-icon-green"><img src="/static/icons/tickets.svg" alt=""></div>
+        <div class="tile-label" data-i18n="tile_my_tickets">Мои билеты</div>
+        <div class="tile-sub" data-i18n="tile_tickets_sub">История посещений</div>
+    </a>
+    <a href="/excursions" class="quick-tile">
+        <div class="tile-icon tile-icon-violet"><img src="/static/icons/excursions.svg" alt=""></div>
+        <div class="tile-label" data-i18n="tile_excursions">Экскурсии</div>
+        <div class="tile-sub" data-i18n="tile_exc_sub">Записаться на тур</div>
+    </a>
+    <a href="/profile"   class="quick-tile">
+        <div class="tile-icon tile-icon-pink"><img src="/static/icons/settings.svg" alt=""></div>
+        <div class="tile-label" data-i18n="tile_profile">Профиль</div>
+        <div class="tile-sub" data-i18n="tile_profile_sub">Настройки аккаунта</div>
+    </a>
+</div>
+
+<div class="info-cards">
+    <div class="info-card">
+        <div class="info-card-icon ic-blue"><img src="/static/icons/calendar.svg" alt=""></div>
+        <div class="info-card-body">
+            <div class="info-card-title" data-i18n="info_hours_title">Часы работы</div>
+            <div class="info-card-text" data-i18n="info_hours_text">Вт–Вс: 10:00–18:00 / Пн: выходной</div>
+        </div>
+    </div>
+    <div class="info-card">
+        <div class="info-card-icon ic-green"><img src="/static/icons/tickets.svg" alt=""></div>
+        <div class="info-card-body">
+            <div class="info-card-title" data-i18n="info_prices_title">Цены на билеты</div>
+            <div class="info-card-text" data-i18n="info_prices_text">Взрослый: 1 500 ₸ / Студент: 750 ₸ · Детский: 500 ₸</div>
+        </div>
+    </div>
+    <div class="info-card">
+        <div class="info-card-icon ic-violet"><img src="/static/icons/excursions.svg" alt=""></div>
+        <div class="info-card-body">
+            <div class="info-card-title" data-i18n="info_exc_title">Экскурсии</div>
+            <div class="info-card-text" data-i18n="info_exc_text">Групповые туры с гидом / Запись онлайн</div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

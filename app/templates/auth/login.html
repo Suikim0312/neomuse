@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block guest %}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="brand">
+            <div class="auth-logo-wrap">
+                <img src="/static/icons/logo.svg" alt="NeoMuse" class="auth-logo-img">
+                <span class="auth-logo-name">NeoMuse</span>
+            </div>
+            <p data-i18n="lbl_museum_desc">Современная система управления музеем</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/login" class="d-flex gap-4" style="flex-direction: column;">
+            <div class="form-group">
+                <label for="email" class="form-label" data-i18n="lbl_email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="admin@neomuse.local" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label" data-i18n="lbl_password">Пароль</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" data-i18n="btn_login">Войти</button>
+        </form>
+
+        <div style="text-align: center; margin-top: var(--space-6);">
+            <p style="font-size: var(--text-sm); color: var(--color-text-tertiary); margin: 0;" data-i18n="lbl_no_account">Нет аккаунта?</p>
+            <a href="/register" style="font-weight: 600; color: var(--color-primary);" data-i18n="btn_register_action">Зарегистрироваться</a>
+        </div>
+
+        <div class="auth-lang-switcher">
+            <div id="langSwitcher"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Профиль{% endblock %}
+{% block page_title %}<span data-i18n="page_profile">Профиль</span>{% endblock %}
+{% block content %}
+
+<div class="profile-layout">
+
+    <div class="profile-avatar-card panel">
+        <div class="profile-avatar-circle">{{ user.full_name[0] | upper }}</div>
+        <div class="profile-avatar-name">{{ user.full_name }}</div>
+        <div class="profile-avatar-role" data-i18n="role_{{ user.role.value }}">{{ role_labels[user.role.value] }}</div>
+        <div class="profile-avatar-email">{{ user.email }}</div>
+        <div class="profile-status {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+            {% if user.is_active %}<span data-i18n="prof_account_active">● Аккаунт активен</span>{% else %}<span data-i18n="prof_inactive">● Неактивен</span>{% endif %}
+        </div>
+        <a href="/settings" class="btn btn-outline-primary" style="margin-top:var(--space-5);width:100%;" data-i18n="btn_settings">Настройки</a>
+        <a href="/logout"   class="btn btn-outline-danger"  style="margin-top:var(--space-3);width:100%;" data-i18n="btn_logout">Выйти</a>
+    </div>
+
+    <div class="profile-info-col">
+        <div class="panel">
+            <div class="panel-header"><h3 data-i18n="prof_personal">Личные данные</h3></div>
+            <div class="profile-info-grid">
+                <div class="profile-info-item">
+                    <div class="profile-info-label" data-i18n="prof_full_name">Полное имя</div>
+                    <div class="profile-info-value">{{ user.full_name }}</div>
+                </div>
+                <div class="profile-info-item">
+                    <div class="profile-info-label" data-i18n="prof_email">Email</div>
+                    <div class="profile-info-value">{{ user.email }}</div>
+                </div>
+                <div class="profile-info-item">
+                    <div class="profile-info-label" data-i18n="prof_role">Роль</div>
+                    <div class="profile-info-value">
+                        <span class="role-badge role-{{ user.role.value }}" data-i18n="role_{{ user.role.value }}">{{ role_labels[user.role.value] }}</span>
+                    </div>
+                </div>
+                <div class="profile-info-item">
+                    <div class="profile-info-label" data-i18n="prof_reg_date">Дата регистрации</div>
+                    <div class="profile-info-value">{{ user.created_at.strftime('%d.%m.%Y') }}</div>
+                </div>
+                <div class="profile-info-item">
+                    <div class="profile-info-label" data-i18n="prof_status">Статус</div>
+                    <div class="profile-info-value">
+                        {% if user.is_active %}
+                        <span style="color:#a0c870;font-weight:600;" data-i18n="prof_active">● Активен</span>
+                        {% else %}
+                        <span style="color:#e07060;font-weight:600;" data-i18n="prof_inactive">● Неактивен</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header"><h3 data-i18n="prof_quick">Быстрые действия</h3></div>
+            <div class="quick-actions">
+                <a href="/exhibits"   class="qa-btn"><img src="/static/icons/exhibits.svg" alt=""><span data-i18n="nav_exhibits">Экспонаты</span></a>
+                <a href="/tickets"    class="qa-btn"><img src="/static/icons/tickets.svg" alt=""><span data-i18n="qa_my_tickets">Мои билеты</span></a>
+                <a href="/excursions" class="qa-btn"><img src="/static/icons/excursions.svg" alt=""><span data-i18n="nav_excursions">Экскурсии</span></a>
+                <a href="/settings"   class="qa-btn"><img src="/static/icons/settings.svg" alt=""><span data-i18n="nav_settings">Настройки</span></a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

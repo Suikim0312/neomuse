@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Настройки{% endblock %}
+{% block page_title %}<span data-i18n="nav_settings">Настройки</span>{% endblock %}
+{% block content %}
+
+{% if success %}
+<div class="alert alert-success" role="alert" style="margin-bottom:var(--space-5);">{{ success }}</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger" role="alert" style="margin-bottom:var(--space-5);">{{ error }}</div>
+{% endif %}
+
+<div class="settings-layout">
+
+    <!-- Sidebar tabs -->
+    <div class="settings-tabs">
+        <a href="#account" class="settings-tab active" data-tab="account">
+            <img src="/static/icons/users.svg" alt="">
+            <span data-i18n="lbl_tab_account">Аккаунт</span>
+        </a>
+        <a href="#security" class="settings-tab" data-tab="security">
+            <img src="/static/icons/settings.svg" alt="">
+            <span data-i18n="lbl_tab_security">Безопасность</span>
+        </a>
+    </div>
+
+    <div class="settings-panels">
+
+        <!-- Account -->
+        <div class="settings-panel panel active" id="tab-account">
+            <div class="panel-header"><h3 data-i18n="lbl_account_data">Данные аккаунта</h3></div>
+            <form method="post" action="/settings/account">
+                <div class="settings-field">
+                    <label class="form-label" data-i18n="lbl_full_name">Полное имя</label>
+                    <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+                    <div class="field-hint" data-i18n="lbl_displayed">Отображается в профиле и навигации</div>
+                </div>
+                <div class="settings-field">
+                    <label class="form-label" data-i18n="lbl_email">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                </div>
+                <div class="settings-field">
+                    <label class="form-label" data-i18n="lbl_role">Роль</label>
+                    <input type="text" class="form-control" value="{{ role_labels[user.role.value] }}" disabled>
+                    <div class="field-hint" data-i18n="lbl_admin_only">Роль назначается администратором</div>
+                </div>
+                <button type="submit" class="btn btn-primary" data-i18n="btn_save_changes">Сохранить изменения</button>
+            </form>
+        </div>
+
+        <!-- Security -->
+        <div class="settings-panel panel" id="tab-security" style="display:none;">
+            <div class="panel-header"><h3 data-i18n="lbl_security">Безопасность</h3></div>
+            <form method="post" action="/settings/password">
+                <div class="settings-field">
+                    <label class="form-label" data-i18n="lbl_curr_pass">Текущий пароль</label>
+                    <input type="password" name="current_password" class="form-control" required autocomplete="current-password">
+                </div>
+                <div class="settings-field">
+                    <label class="form-label" data-i18n="lbl_new_pass">Новый пароль</label>
+                    <input type="password" name="new_password" class="form-control" required autocomplete="new-password" minlength="6">
+                </div>
+                <div class="settings-field">
+                    <label class="form-label" data-i18n="lbl_confirm_pass">Подтвердите новый пароль</label>
+                    <input type="password" name="confirm_password" class="form-control" required autocomplete="new-password" minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary" data-i18n="btn_change_pass">Сменить пароль</button>
+            </form>
+
+            <hr style="border:none;border-top:1px solid var(--color-divider);margin:var(--space-6) 0;">
+
+            <div class="danger-zone">
+                <h4 style="color:var(--color-destructive);margin-bottom:var(--space-3);" data-i18n="lbl_danger_zone">Зона опасности</h4>
+                <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:var(--space-4);" data-i18n="lbl_logout_msg">
+                    Выход завершит все активные сессии.
+                </p>
+                <a href="/logout" class="btn btn-outline-danger" data-i18n="btn_logout_sys">Выйти из системы</a>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.settings-tab').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = this.dataset.tab;
+        document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.settings-panel').forEach(p => p.style.display = 'none');
+        this.classList.add('active');
+        document.getElementById('tab-' + target).style.display = 'block';
+    });
+});
+
+// Theme
+function setTheme(mode) {
+    localStorage.setItem('theme-mode', mode);
+    document.querySelectorAll('.appearance-option').forEach(o => o.classList.remove('selected'));
+    document.getElementById('opt-' + mode).classList.add('selected');
+    if (mode === 'dark') {
+        document.documentElement.style.colorScheme = 'dark';
+        document.body.classList.add('dark-mode');
+    } else if (mode === 'light') {
+        document.documentElement.style.colorScheme = 'light';
+        document.body.classList.remove('dark-mode');
+    } else {
+        document.documentElement.style.colorScheme = '';
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+// Restore selected theme option
+(function() {
+    const m = localStorage.getItem('theme-mode') || 'auto';
+    const el = document.getElementById('opt-' + m);
+    if (el) el.classList.add('selected');
+})();
+</script>
+{% endblock %}

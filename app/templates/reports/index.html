@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Отчёты{% endblock %}
+{% block page_title %}<span data-i18n="page_reports">Отчёты</span>{% endblock %}
+{% block content %}
+<div class="panel">
+    <h3 data-i18n="lbl_generate_report">Сформировать отчёт</h3>
+    <form method="post" action="/reports/generate" class="d-flex gap-2 flex-wrap">
+        <select name="report_type" class="form-select" style="max-width:340px;">
+            <option value="ticket_sales" data-i18n="lbl_report_tickets">Отчёт по продажам билетов</option>
+            <option value="visitor_stats" data-i18n="lbl_report_visitors">Отчёт по статистике посетителей</option>
+            <option value="excursion_schedule" data-i18n="lbl_report_excursions">Отчёт по расписанию экскурсий</option>
+        </select>
+        <button class="btn btn-primary" data-i18n="btn_generate">Сформировать</button>
+    </form>
+    <p class="text-muted mt-2 mb-0" style="font-size:13px;" data-i18n="lbl_report_hint">
+        Отчёты формируются в фоне через Celery и сохраняются в формате CSV.
+    </p>
+</div>
+
+<div class="panel">
+    <h3 data-i18n="lbl_ready_reports">Готовые отчёты</h3>
+    <table class="table">
+        <thead><tr><th data-i18n="lbl_file">Файл</th><th data-i18n="lbl_action">Действие</th></tr></thead>
+        <tbody>
+        {% for f in files %}
+            <tr>
+                <td>{{ f }}</td>
+                <td><a href="/api/reports/download/{{ f }}" class="btn btn-sm btn-outline-primary" data-i18n="btn_download">Скачать</a></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="2" class="text-muted" data-i18n="lbl_no_reports">Отчётов пока нет. Обновите страницу через несколько секунд после генерации.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

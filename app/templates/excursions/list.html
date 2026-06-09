@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Экскурсии{% endblock %}
+{% block page_title %}<span data-i18n="page_excursions">Экскурсии</span>{% endblock %}
+{% block content %}
+
+<!-- Admin: create form (collapsible) -->
+{% if user.role.value in ['admin', 'manager'] %}
+<div class="exc-create-panel" id="createPanel">
+    <button class="exc-create-toggle" onclick="toggleCreate()" id="createToggle">
+        <img src="/static/icons/excursions.svg" alt="" class="btn-icon">
+        <span data-i18n="btn_create_exc">Создать экскурсию</span>
+        <span class="collapse-arrow" id="createArrow">▾</span>
+    </button>
+    <div class="exc-create-body" id="createBody" style="display:none;">
+        <form method="post" action="/excursions/new" class="exc-create-form">
+            <div class="ff-field">
+                <label class="form-label" data-i18n="lbl_title_req">Название *</label>
+                <input type="text" name="title" class="form-control" placeholder="Обзорная экскурсия" required data-i18n-placeholder="lbl_exc_title_ph">
+            </div>
+            <div class="ff-field">
+                <label class="form-label" data-i18n="lbl_description">Описание</label>
+                <input type="text" name="description" class="form-control" placeholder="Краткое описание" data-i18n-placeholder="lbl_exc_desc_ph">
+            </div>
+            <div class="exc-create-row">
+                <div class="ff-field">
+                    <label class="form-label" data-i18n="lbl_guide">Гид</label>
+                    <select name="guide_id" class="form-select">
+                        <option value="" data-i18n="lbl_no_guide">Без гида</option>
+                        {% for g in guides %}<option value="{{ g.id }}">{{ g.full_name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="ff-field">
+                    <label class="form-label" data-i18n="lbl_seats_count">Мест</label>
+                    <input type="number" name="max_participants" class="form-control" value="10" min="1">
+                </div>
+            </div>
+            <div class="exc-create-row">
+                <div class="ff-field">
+                    <label class="form-label" data-i18n="lbl_start_time">Начало *</label>
+                    <input type="datetime-local" name="start_time" class="form-control" required>
+                </div>
+                <div class="ff-field">
+                    <label class="form-label" data-i18n="lbl_end_time">Конец</label>
+                    <input type="datetime-local" name="end_time" class="form-control">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="btn_create_exc">Создать экскурсию</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="exc-stats-row">
+    <div class="exc-stat-pill">
+        <span class="exc-stat-num">{{ excursions | length }}</span>
+        <span class="exc-stat-lbl" data-i18n="lbl_total">Всего</span>
+    </div>
+    <div class="exc-stat-pill">
+        <span class="exc-stat-num">{{ excursions | selectattr('status.value','eq','scheduled') | list | length }}</span>
+        <span class="exc-stat-lbl" data-i18n="lbl_scheduled">Запланировано</span>
+    </div>
+    <div class="exc-stat-pill">
+        <span class="exc-stat-num">{{ excursions | selectattr('status.value','eq','in_progress') | list | length }}</span>
+        <span class="exc-stat-lbl" data-i18n="lbl_in_progress">Идут сейчас</span>
+    </div>
+    <div class="exc-stat-pill">
+        <span class="exc-stat-num">{{ excursions | selectattr('status.value','eq','completed') | list | length }}</span>
+        <span class="exc-stat-lbl" data-i18n="lbl_completed">Завершено</span>
+    </div>
+</div>
+
+<!-- Cards -->
+{% if excursions %}
+<div class="exc-grid">
+    {% for e in excursions %}
+    {% set booked = counts.get(e.id, 0) %}
+    {% set pct = ((booked / e.max_participants) * 100) | int if e.max_participants > 0 else 0 %}
+    <div class="exc-card">
+        <div class="exc-card-stripe s-{{ e.status.value }}"></div>
+        <div class="exc-card-body">
+
+            <div class="exc-card-top">
+                <span class="badge-status s-{{ e.status.value }}" data-i18n="exc_status_{{ e.status.value }}">{{ excursion_status_labels[e.status.value] }}</span>
+                <span class="exc-card-date">
+                    <img src="/static/icons/calendar.svg" class="inline-icon" alt="">
+                    {{ e.start_time.strftime('%d.%m.%Y') }}
+                </span>
+            </div>
+
+            <h3 class="exc-card-title">{{ tfield(e, 'title', lang) }}</h3>
+            {% set exc_desc = tfield(e, 'description', lang) %}
+            <p class="exc-card-desc">{{ exc_desc[:100] }}{% if exc_desc|length > 100 %}…{% endif %}</p>
+
+            <div class="exc-card-meta-row">
+                <div class="exc-meta-item">
+                    <img src="/static/icons/excursions.svg" class="inline-icon" alt="">
+                    <span>{{ e.start_time.strftime('%H:%M') }}{% if e.end_time %} – {{ e.end_time.strftime('%H:%M') }}{% endif %}</span>
+                </div>
+                {% if e.guide %}
+                <div class="exc-meta-item">
+                    <img src="/static/icons/users.svg" class="inline-icon" alt="">
+                    <span>{{ e.guide.full_name }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="exc-capacity">
+                <div class="exc-capacity-top">
+                    <span class="exc-capacity-label" data-i18n="lbl_seats">Мест занято</span>
+                    <span class="exc-capacity-num">{{ booked }} / {{ e.max_participants }}</span>
+                </div>
+                <div class="exc-capacity-track">
+                    <div class="exc-capacity-fill {% if pct >= 90 %}fill-red{% elif pct >= 60 %}fill-amber{% else %}fill-green{% endif %}"
+                         style="width:{{ pct }}%"></div>
+                </div>
+            </div>
+
+            <div class="exc-action">
+                {% if user.role.value == 'visitor' %}
+                    {% if e.id in user_bookings %}
+                    <form method="post" action="/excursions/{{ e.id }}/unregister" style="width: 100%;">
+                        <button type="submit" class="btn exc-action-btn exc-btn-booked" data-i18n="btn_booked">
+                            ✓ Вы записаны
+                        </button>
+                    </form>
+                    {% elif e.status.value == 'scheduled' and booked < e.max_participants %}
+                    <form method="post" action="/excursions/{{ e.id }}/register">
+                        <button type="submit" class="btn btn-primary exc-action-btn" data-i18n="btn_register">Записаться</button>
+                    </form>
+                    {% elif booked >= e.max_participants %}
+                    <button class="btn btn-outline-secondary exc-action-btn" disabled data-i18n="btn_no_seats">Мест нет</button>
+                    {% else %}
+                    <button class="btn btn-outline-secondary exc-action-btn" disabled data-i18n="btn_unavailable">Недоступна</button>
+                    {% endif %}
+                {% elif user.role.value in ['admin','manager','guide'] %}
+                <form method="post" action="/excursions/{{ e.id }}/status" class="exc-status-form">
+                    <select name="status" class="form-select exc-status-select">
+                        {% for key, label in excursion_status_labels.items() %}
+                        <option value="{{ key }}" {% if e.status.value == key %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-outline-primary exc-status-btn" data-i18n="btn_save">Сохранить</button>
+                </form>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state-full">
+    <img src="/static/icons/excursions.svg" alt="">
+    <h3 data-i18n="lbl_no_excursions">Экскурсий пока нет</h3>
+    <p data-i18n="lbl_no_excursions_sub">Запланированные экскурсии появятся здесь</p>
+</div>
+{% endif %}
+
+<script>
+function toggleCreate() {
+    const body  = document.getElementById('createBody');
+    const arrow = document.getElementById('createArrow');
+    const open  = body.style.display === 'none' || body.style.display === '';
+    body.style.display  = open ? 'block' : 'none';
+    arrow.textContent   = open ? '▴' : '▾';
+}
+</script>
+{% endblock %}

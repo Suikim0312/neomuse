@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block page_title %}<span data-i18n="page_users">Пользователи</span>{% endblock %}
+{% block content %}
+<div class="panel">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th data-i18n="lbl_full_name">Имя</th>
+                <th>Email</th>
+                <th data-i18n="lbl_role">Роль</th>
+                <th data-i18n="prof_status">Статус</th>
+                <th data-i18n="lbl_action">Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.full_name }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ role_labels[u.role.value] }}</td>
+                <td>
+                    {% if u.is_active %}<span class="badge-status s-paid" data-i18n="prof_active">Активен</span>
+                    {% else %}<span class="badge-status s-cancelled" data-i18n="prof_inactive">Неактивен</span>{% endif %}
+                </td>
+                <td>
+                    {% if u.id != user.id %}
+                    <form method="post" action="/users/{{ u.id }}/toggle">
+                        <button class="btn btn-sm btn-outline-primary">
+                            {% if u.is_active %}<span data-i18n="btn_deactivate">Деактивировать</span>{% else %}<span data-i18n="btn_activate">Активировать</span>{% endif %}
+                        </button>
+                    </form>
+                    {% else %}<span class="text-muted">—</span>{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

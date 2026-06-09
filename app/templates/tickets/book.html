@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}Бронирование{% endblock %}
+{% block page_title %}<span data-i18n="page_booking">Бронирование билета</span>{% endblock %}
+{% block content %}
+
+<div class="book-layout">
+
+    <!-- Form -->
+    <div class="panel book-form-panel">
+        <div class="book-form-header">
+            <div class="book-form-icon">
+                <img src="/static/icons/tickets.svg" alt="">
+            </div>
+            <div>
+                <h3 style="margin:0 0 4px;" data-i18n="lbl_new_ticket">Новый билет</h3>
+                <p style="margin:0;font-size:var(--text-sm);color:var(--color-text-secondary);" data-i18n="lbl_select_type_date">Выберите тип и дату посещения</p>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/tickets/book" id="bookForm">
+            <div class="settings-field">
+                <label class="form-label" data-i18n="lbl_ticket_type">Тип билета</label>
+                <div class="ticket-type-selector" id="typeSelector">
+                    <label class="tts-option" data-val="adult">
+                        <input type="radio" name="ticket_type" value="adult" required>
+                        <div class="tts-card tts-adult">
+                            <div class="tts-icon"><img src="/static/icons/users.svg" alt=""></div>
+                            <div class="tts-name" data-i18n="lbl_adult">Взрослый</div>
+                            <div class="tts-price">3 000 ₸</div>
+                        </div>
+                    </label>
+                    <label class="tts-option" data-val="student">
+                        <input type="radio" name="ticket_type" value="student">
+                        <div class="tts-card tts-student">
+                            <div class="tts-icon"><img src="/static/icons/exhibits.svg" alt=""></div>
+                            <div class="tts-name" data-i18n="lbl_student">Студент</div>
+                            <div class="tts-price">1 500 ₸</div>
+                        </div>
+                    </label>
+                    <label class="tts-option" data-val="child">
+                        <input type="radio" name="ticket_type" value="child">
+                        <div class="tts-card tts-child">
+                            <div class="tts-icon"><img src="/static/icons/home.svg" alt=""></div>
+                            <div class="tts-name" data-i18n="lbl_child">Детский</div>
+                            <div class="tts-price">1 000 ₸</div>
+                        </div>
+                    </label>
+                    <label class="tts-option" data-val="group">
+                        <input type="radio" name="ticket_type" value="group">
+                        <div class="tts-card tts-group">
+                            <div class="tts-icon"><img src="/static/icons/excursions.svg" alt=""></div>
+                            <div class="tts-name" data-i18n="lbl_group">Групповой</div>
+                            <div class="tts-price">12 000 ₸</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-field">
+                <label class="form-label" data-i18n="lbl_visit_date">Дата и время визита</label>
+                <input type="datetime-local" name="visit_date" class="form-control" required id="visitDate">
+                <div class="field-hint" data-i18n="lbl_museum_hours">Музей работает Вт–Вс, 10:00–18:00</div>
+            </div>
+
+            <div style="display:flex;gap:var(--space-3);margin-top:var(--space-6);">
+                <button type="submit" class="btn btn-primary btn-lg" style="flex:1;" data-i18n="btn_book_confirm">Забронировать</button>
+                <a href="/tickets" class="btn btn-outline-secondary btn-lg" data-i18n="btn_cancel">Отмена</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview ticket -->
+    <div class="book-preview">
+        <div class="book-preview-label" data-i18n="lbl_preview">Предпросмотр</div>
+        <div class="ticket-card tc-booked preview-ticket" id="previewTicket">
+            <div class="tc-hole tc-hole-left"></div>
+            <div class="tc-hole tc-hole-right"></div>
+            <div class="tc-divider"></div>
+            <div class="tc-top">
+                <div class="tc-header">
+                    <div class="tc-type-icon ti-adult" id="prev-icon">
+                        <img src="/static/icons/tickets.svg" alt="">
+                    </div>
+                    <div>
+                        <div class="tc-type" id="prev-type">Взрослый</div>
+                        <div class="tc-visitor">{{ user.full_name }}</div>
+                    </div>
+                    <span class="badge-status s-booked tc-badge" data-i18n="lbl_booked_status">Забронирован</span>
+                </div>
+                <div class="tc-info-row">
+                    <div class="tc-info-item">
+                        <div class="tc-info-label" data-i18n="lbl_visit_date_lbl">Дата визита</div>
+                        <div class="tc-info-val" id="prev-date">—</div>
+                    </div>
+                    <div class="tc-info-item">
+                        <div class="tc-info-label" data-i18n="lbl_time">Время</div>
+                        <div class="tc-info-val" id="prev-time">—</div>
+                    </div>
+                    <div class="tc-info-item">
+                        <div class="tc-info-label" data-i18n="lbl_cost">Стоимость</div>
+                        <div class="tc-info-val tc-price" id="prev-price">3 000 ₸</div>
+                    </div>
+                    <div class="tc-info-item">
+                        <div class="tc-info-label" data-i18n="lbl_museum">Музей</div>
+                        <div class="tc-info-val">NeoMuse</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tc-bottom">
+                <div class="tc-qr-area">
+                    <div class="tc-qr-visual">
+                        <div class="qr-grid">
+                            {% for i in range(16) %}
+                            <div class="qr-cell {% if i in [0,1,4,5,8,10,11,14,15,3,6,9] %}qr-dark{% endif %}"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="tc-qr-code">NM-PREVIEW</div>
+                </div>
+                <div class="tc-barcode">
+                    {% for i in range(28) %}
+                    <div class="bc-bar" style="height:{% if i % 3 == 0 %}100%{% elif i % 5 == 0 %}70%{% else %}85%{% endif %};width:{% if i % 4 == 0 %}2px{% else %}1px{% endif %}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const prices = { adult: 3000, student: 1500, child: 1000, group: 12000 };
+const names  = { adult: 'Взрослый', student: 'Студент', child: 'Детский', group: 'Групповой' };
+
+document.querySelectorAll('.tts-option input').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.tts-card').forEach(c => c.classList.remove('selected'));
+        this.closest('.tts-option').querySelector('.tts-card').classList.add('selected');
+        document.getElementById('prev-type').textContent  = names[this.value];
+        document.getElementById('prev-price').textContent = prices[this.value].toLocaleString('ru') + ' ₸';
+        document.getElementById('prev-icon').className    = 'tc-type-icon ti-' + this.value;
+    });
+});
+
+document.getElementById('visitDate').addEventListener('change', function() {
+    const d = new Date(this.value);
+    if (isNaN(d)) return;
+    document.getElementById('prev-date').textContent = d.toLocaleDateString('ru-RU');
+    document.getElementById('prev-time').textContent = d.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+});
+
+// Pre-select first radio
+document.querySelector('.tts-option input').checked = true;
+document.querySelector('.tts-card').classList.add('selected');
+
+// Date validation: only future dates, not Mondays (museum closed)
+(function() {
+    const visitInput = document.getElementById('visitDate');
+    if (!visitInput) return;
+
+    function getMinDateTime() {
+        const now = new Date();
+        now.setDate(now.getDate() + 1); // tomorrow minimum
+        const min = new Date(now);
+        min.setHours(10, 0, 0, 0); // museum opens at 10:00
+        return formatDateTime(min);
+    }
+
+    function formatDateTime(date) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const hh = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+    }
+
+    function validateDateTime(dateStr) {
+        if (!dateStr) return true;
+        const date = new Date(dateStr);
+        if (isNaN(date)) return false;
+
+        // No past dates
+        const now = new Date();
+        if (date < now) return false;
+
+        // Monday is closed (day 1 in JS: 0=Sun, 1=Mon, 2=Tue... 6=Sat)
+        if (date.getDay() === 1) {
+            alert('Музей закрыт по понедельникам');
+            return false;
+        }
+
+        // Hours: 10:00-18:00
+        const hour = date.getHours();
+        if (hour < 10 || hour >= 18) {
+            alert('Музей работает 10:00–18:00');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Set minimum date
+    visitInput.min = getMinDateTime();
+
+    // Validate on change
+    visitInput.addEventListener('change', function() {
+        if (!validateDateTime(this.value)) {
+            this.value = '';
+            document.getElementById('prev-date').textContent = '—';
+            document.getElementById('prev-time').textContent = '—';
+        }
+    });
+
+    // Validate on form submit
+    document.getElementById('bookForm').addEventListener('submit', function(e) {
+        if (!validateDateTime(visitInput.value)) {
+            e.preventDefault();
+            visitInput.focus();
+        }
+    });
+})();
+</script>
+{% endblock %}

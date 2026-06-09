@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="NeoMuse — современная система управления музеем.">
+    <meta name="theme-color" content="#b8732a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}NeoMuse{% endblock %} — NeoMuse</title>
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <style>
+        .skip-to-main {
+            position: absolute; top: -40px; left: 0;
+            background: var(--color-primary); color: white;
+            padding: 8px 16px; z-index: 9999;
+            border-radius: 0 0 8px 0; font-family: var(--font-sans); text-decoration: none;
+        }
+        .skip-to-main:focus { top: 0; }
+        .nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+        /* Language switcher */
+        #langSwitcher {
+            display: flex; gap: 4px; align-items: center;
+            margin-left: auto; padding-right: 4px;
+        }
+        .lang-btn {
+            font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+            padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(184,115,42,0.3);
+            background: transparent; color: rgba(212,160,85,0.7);
+            cursor: pointer; transition: all 0.15s; letter-spacing: 0.4px;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 30px;
+        }
+        .lang-btn:hover { background: rgba(184,115,42,0.12); color: #e8c47a; border-color: rgba(184,115,42,0.5); }
+        .lang-btn.active { background: rgba(184,115,42,0.22); color: #e8c47a; border-color: rgba(184,115,42,0.6); }
+    </style>
+</head>
+<body>
+<a href="#main" class="skip-to-main" data-i18n="lbl_skip_nav">Перейти к основному контенту</a>
+
+{% if user %}
+<div class="app-layout">
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Главная навигация">
+        <div class="sidebar-brand">
+            <div class="brand-mark">
+                <img src="/static/icons/logo.svg" alt="NeoMuse" class="brand-logo-img">
+            </div>
+            <div class="brand-name">NeoMuse</div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Меню">
+            {% if user.role.value in ['admin', 'manager'] %}
+            <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+                <img src="/static/icons/dashboard.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_dashboard">Панель управления</span>
+            </a>
+            {% else %}
+            <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+                <img src="/static/icons/home.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_home">Главная</span>
+            </a>
+            {% endif %}
+
+            <a href="/exhibits" class="nav-item {% if '/exhibits' in request.url.path %}active{% endif %}">
+                <img src="/static/icons/exhibits.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_exhibits">Экспонаты</span>
+            </a>
+
+            <a href="/tickets" class="nav-item {% if '/tickets' in request.url.path %}active{% endif %}">
+                <img src="/static/icons/tickets.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_tickets">Билеты</span>
+            </a>
+
+            <a href="/excursions" class="nav-item {% if '/excursions' in request.url.path %}active{% endif %}">
+                <img src="/static/icons/excursions.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_excursions">Экскурсии</span>
+            </a>
+
+            {% if user.role.value in ['admin', 'manager'] %}
+            <a href="/reports" class="nav-item {% if '/reports' in request.url.path %}active{% endif %}">
+                <img src="/static/icons/reports.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_reports">Отчёты</span>
+            </a>
+            {% endif %}
+
+            {% if user.role.value == 'admin' %}
+            <a href="/users" class="nav-item {% if '/users' in request.url.path %}active{% endif %}">
+                <img src="/static/icons/users.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_users">Пользователи</span>
+            </a>
+            {% endif %}
+
+            <a href="/profile" class="nav-item {% if request.url.path == '/profile' %}active{% endif %}">
+                <img src="/static/icons/users.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_profile">Профиль</span>
+            </a>
+            <a href="/settings" class="nav-item {% if '/settings' in request.url.path %}active{% endif %}">
+                <img src="/static/icons/settings.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_settings">Настройки</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <div class="user-name">{{ user.full_name }}</div>
+                <div class="user-role" data-i18n="role_{{ user.role.value }}">{{ role_labels[user.role.value] }}</div>
+            </div>
+            <a href="/logout" class="btn-logout" role="button">
+                <img src="/static/icons/logout.svg" class="nav-icon" alt="">
+                <span data-i18n="nav_logout">Выйти</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="topbar" role="banner">
+            <button class="burger-btn" id="burgerBtn" onclick="toggleSidebar()" aria-label="Открыть меню" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+            <div id="langSwitcher"></div>
+        </div>
+        <div class="page-body" id="main" role="main">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const btn = document.getElementById('burgerBtn');
+    const isOpen = sidebar.classList.toggle('open');
+    overlay.classList.toggle('active', isOpen);
+    btn.classList.toggle('active', isOpen);
+    btn.setAttribute('aria-expanded', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const btn = document.getElementById('burgerBtn');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+    btn.classList.remove('active');
+    btn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav-item').forEach(function(link) {
+        link.addEventListener('click', closeSidebar);
+    });
+});
+</script>
+
+{% else %}
+    {% block guest %}{% endblock %}
+{% endif %}
+
+<script src="/static/js/bg-canvas.js"></script>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Экспонаты{% endblock %}
+{% block page_title %}<span data-i18n="page_exhibits">Экспонаты</span>{% endblock %}
+{% block content %}
+
+<!-- Filter -->
+<div class="mobile-filter-wrap">
+    <button class="mobile-filter-toggle" onclick="toggleFilter()" id="filterToggle">
+        <img src="/static/icons/settings.svg" alt="" class="btn-icon">
+        <span data-i18n="btn_filters">Фильтры</span>{% if search or selected_category %} <span class="filter-badge">●</span>{% endif %}
+    </button>
+    {% if user.role.value in ['admin', 'manager'] %}
+    <a href="/exhibits/new" class="btn btn-primary btn-mobile-add">
+        <img src="/static/icons/exhibits.svg" alt="" class="btn-icon"> <span data-i18n="btn_add">+ Добавить</span>
+    </a>
+    {% endif %}
+</div>
+
+<div class="mobile-filter-panel" id="filterPanel">
+    <form method="get" action="/exhibits" class="filter-form-inner">
+        <div class="ff-field">
+            <label class="form-label" data-i18n="lbl_search">Поиск</label>
+            <input type="text" name="search" value="{{ search or '' }}" class="form-control"
+                   placeholder="Название экспоната..." data-i18n-placeholder="lbl_search">
+        </div>
+        <div class="ff-field">
+            <label class="form-label" data-i18n="lbl_category">Категория</label>
+            <select name="category" class="form-select">
+                <option value="" data-i18n="lbl_all_cats">Все категории</option>
+                {% for c in categories %}
+                <option value="{{ c }}" {% if c == selected_category %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ff-actions">
+            <button type="submit" class="btn btn-primary" data-i18n="btn_apply">Применить</button>
+            {% if search or selected_category %}
+            <a href="/exhibits" class="btn btn-outline-secondary" data-i18n="btn_reset">Сбросить</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Count -->
+{% if exhibits %}
+<p class="results-count"><span data-i18n="lbl_found">Найдено</span>: <strong>{{ exhibits | length }}</strong></p>
+{% endif %}
+
+<!-- Grid -->
+<div class="exhibit-grid">
+    {% for e in exhibits %}
+    <div class="exhibit-card">
+        <div class="thumb">
+            {% if e.image_url %}
+            <img src="{{ e.image_url }}" alt="{{ e.title }}" loading="lazy">
+            {% else %}
+            <div class="exhibit-thumb-placeholder">
+                <img src="/static/icons/museum.svg" alt="">
+                <span>{{ e.category or 'Экспонат' }}</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="body">
+            <div class="exhibit-category-tag">{{ tfield(e, 'category', lang) }}</div>
+            <h4>{{ tfield(e, 'title', lang) }}</h4>
+            <div class="meta">{{ tfield(e, 'period', lang) }}</div>
+            {% set desc = tfield(e, 'description', lang) %}
+            <p class="exhibit-desc">{{ desc[:80] }}{% if desc|length > 80 %}…{% endif %}</p>
+            <div class="exhibit-footer">
+                <span class="meta">{{ e.location_hall }}</span>
+                <span class="exhibit-avail {% if e.is_available %}avail-yes{% else %}avail-no{% endif %}">
+                    {% if e.is_available %}<span data-i18n="lbl_available">Доступен</span>{% else %}<span data-i18n="lbl_unavailable">Недоступен</span>{% endif %}
+                </span>
+            </div>
+            {% if user.role.value in ['admin', 'manager'] %}
+            <div class="exhibit-card-actions">
+                <a href="/exhibits/{{ e.id }}/edit" class="btn btn-sm btn-outline-primary" data-i18n="btn_edit">Изменить</a>
+                <form method="post" action="/exhibits/{{ e.id }}/delete" data-confirm="Удалить экспонат «{{ e.title }}»?">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" data-i18n="btn_delete">Удалить</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state-full">
+        <img src="/static/icons/museum.svg" alt="">
+        <h3 data-i18n="lbl_nothing_found">Ничего не найдено</h3>
+        <p data-i18n="lbl_try_other_search">Попробуйте изменить параметры поиска</p>
+        <a href="/exhibits" class="btn btn-outline-primary" data-i18n="btn_reset">Сбросить фильтры</a>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function toggleFilter() {
+    const panel = document.getElementById('filterPanel');
+    const btn   = document.getElementById('filterToggle');
+    const open  = panel.classList.toggle('open');
+    btn.classList.toggle('active', open);
+}
+{% if search or selected_category %}
+document.getElementById('filterPanel').classList.add('open');
+{% endif %}
+</script>
+{% endblock %}

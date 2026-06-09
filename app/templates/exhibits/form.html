@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{% if exhibit %}<span data-i18n="page_edit_exhibit">Редактирование</span>{% else %}<span data-i18n="page_new_exhibit">Новый экспонат</span>{% endif %}{% endblock %}
+{% block page_title %}{% if exhibit %}<span data-i18n="page_edit_exhibit">Редактирование экспоната</span>{% else %}<span data-i18n="page_new_exhibit">Новый экспонат</span>{% endif %}{% endblock %}
+{% block content %}
+<div class="panel" style="max-width:720px;">
+    <form method="post" action="{% if exhibit %}/exhibits/{{ exhibit.id }}/edit{% else %}/exhibits/new{% endif %}">
+        <div class="mb-3">
+            <label class="form-label" data-i18n="lbl_title_req">Название *</label>
+            <input type="text" name="title" class="form-control" required value="{{ exhibit.title if exhibit else '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label" data-i18n="lbl_description">Описание</label>
+            <textarea name="description" class="form-control" rows="3">{{ exhibit.description if exhibit else '' }}</textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+            <div>
+                <label class="form-label" data-i18n="lbl_category">Категория</label>
+                <input type="text" name="category" class="form-control" value="{{ exhibit.category if exhibit else '' }}">
+            </div>
+            <div>
+                <label class="form-label" data-i18n="lbl_origin">Происхождение</label>
+                <input type="text" name="origin" class="form-control" value="{{ exhibit.origin if exhibit else '' }}">
+            </div>
+            <div>
+                <label class="form-label" data-i18n="lbl_period">Период</label>
+                <input type="text" name="period" class="form-control" value="{{ exhibit.period if exhibit else '' }}">
+            </div>
+            <div>
+                <label class="form-label" data-i18n="lbl_condition">Состояние</label>
+                <input type="text" name="condition_status" class="form-control" value="{{ exhibit.condition_status if exhibit else '' }}">
+            </div>
+            <div>
+                <label class="form-label" data-i18n="lbl_hall">Зал</label>
+                <input type="text" name="location_hall" class="form-control" value="{{ exhibit.location_hall if exhibit else '' }}">
+            </div>
+            <div>
+                <label class="form-label" data-i18n="lbl_image_url">URL изображения</label>
+                <input type="url" name="image_url" class="form-control" placeholder="https://..." value="{{ exhibit.image_url if exhibit else '' }}">
+            </div>
+        </div>
+        <div style="display:flex;gap:var(--space-3);margin-top:var(--space-6);">
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save">Сохранить</button>
+            <a href="/exhibits" class="btn btn-outline-secondary" data-i18n="btn_cancel">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

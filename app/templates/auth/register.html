@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block guest %}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="brand">
+            <div class="auth-logo-wrap">
+                <img src="/static/icons/logo.svg" alt="NeoMuse" class="auth-logo-img">
+                <span class="auth-logo-name">NeoMuse</span>
+            </div>
+            <p class="text-muted mb-0" data-i18n="lbl_register_title">Регистрация посетителя</p>
+        </div>
+        {% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+        <form method="post" action="/register">
+            <div class="mb-3">
+                <label class="form-label" data-i18n="lbl_full_name">Полное имя</label>
+                <input type="text" name="full_name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" data-i18n="lbl_email">Электронная почта</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" data-i18n="lbl_password">Пароль</label>
+                <input type="password" name="password" class="form-control" minlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" data-i18n="btn_register_action">Зарегистрироваться</button>
+        </form>
+        <p class="text-center mt-3 mb-0">
+            <span data-i18n="lbl_has_account">Уже есть аккаунт?</span> <a href="/login" data-i18n="btn_login">Войти</a>
+        </p>
+        <div class="auth-lang-switcher">
+            <div id="langSwitcher"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

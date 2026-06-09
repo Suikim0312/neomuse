@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Outer ring -->
+  <circle cx="20" cy="20" r="19" stroke="url(#lg1)" stroke-width="1.5" opacity="0.7"/>
+  <!-- Building base -->
+  <rect x="8" y="27" width="24" height="3" rx="1.5" fill="url(#lg1)"/>
+  <!-- Columns -->
+  <rect x="10" y="18" width="3" height="9" rx="1.5" fill="url(#lg1)"/>
+  <rect x="15.5" y="18" width="3" height="9" rx="1.5" fill="url(#lg1)"/>
+  <rect x="21" y="18" width="3" height="9" rx="1.5" fill="url(#lg1)"/>
+  <rect x="26.5" y="18" width="3" height="9" rx="1.5" fill="url(#lg1)"/>
+  <!-- Pediment / roof -->
+  <path d="M7 18 L20 10 L33 18 Z" fill="url(#lg1)" opacity="0.95"/>
+  <!-- Star dot on top -->
+  <circle cx="20" cy="8" r="2" fill="#fff9ee" opacity="0.95"/>
+  <defs>
+    <linearGradient id="lg1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e8c47a"/>
+      <stop offset="100%" stop-color="#b8732a"/>
+    </linearGradient>
+  </defs>
+</svg>

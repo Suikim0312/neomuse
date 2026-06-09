@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Билеты{% endblock %}
+{% block page_title %}<span data-i18n="page_tickets">Билеты</span>{% endblock %}
+{% block content %}
+
+<!-- Stats row -->
+<div class="ticket-stats-row">
+    <div class="ticket-stat-card ts-blue">
+        <div class="ts-icon"><img src="/static/icons/tickets.svg" alt=""></div>
+        <div class="ts-body">
+            <div class="ts-num">{{ tickets | length }}</div>
+            <div class="ts-lbl" data-i18n="lbl_total_tickets">Всего билетов</div>
+        </div>
+    </div>
+    <div class="ticket-stat-card ts-green">
+        <div class="ts-icon"><img src="/static/icons/check.svg" alt=""></div>
+        <div class="ts-body">
+            <div class="ts-num">{{ tickets | selectattr('status.value','eq','paid') | list | length }}</div>
+            <div class="ts-lbl" data-i18n="lbl_paid">Оплачено</div>
+        </div>
+    </div>
+    <div class="ticket-stat-card ts-violet">
+        <div class="ts-icon"><img src="/static/icons/calendar.svg" alt=""></div>
+        <div class="ts-body">
+            <div class="ts-num">{{ tickets | selectattr('status.value','eq','booked') | list | length }}</div>
+            <div class="ts-lbl" data-i18n="lbl_booked">Забронировано</div>
+        </div>
+    </div>
+    <div class="ticket-stat-card ts-amber">
+        <div class="ts-icon"><img src="/static/icons/reports.svg" alt=""></div>
+        <div class="ts-body">
+            <div class="ts-num">{{ '%.0f'|format(tickets | sum(attribute='price')) }} ₸</div>
+            <div class="ts-lbl" data-i18n="lbl_total_sum">Общая сумма</div>
+        </div>
+    </div>
+</div>
+
+<!-- Book button -->
+<div style="margin-bottom:var(--space-5);">
+    <a href="/tickets/book" class="btn btn-primary btn-lg">
+        <img src="/static/icons/tickets.svg" alt="" style="width:16px;height:16px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:8px;">
+        <span data-i18n="btn_buy">Забронировать билет</span>
+    </a>
+</div>
+
+<!-- Ticket cards grid -->
+{% if tickets %}
+<div class="ticket-grid">
+    {% for t in tickets %}
+    <div class="ticket-card tc-{{ t.status.value }}">
+        <div class="tc-hole tc-hole-left"></div>
+        <div class="tc-hole tc-hole-right"></div>
+        <div class="tc-divider"></div>
+
+        <div class="tc-top">
+            <div class="tc-header">
+                <div class="tc-type-icon ti-{{ t.ticket_type.value }}">
+                    <img src="/static/icons/tickets.svg" alt="">
+                </div>
+                <div>
+                    <div class="tc-type" data-i18n="lbl_{{ t.ticket_type.value }}">{{ ticket_type_labels[t.ticket_type.value] }}</div>
+                    {% if user.role.value in ['admin','manager'] %}
+                    <div class="tc-visitor">{{ t.visitor.full_name }}</div>
+                    {% endif %}
+                </div>
+                <span class="badge-status s-{{ t.status.value }} tc-badge" data-i18n="ticket_status_{{ t.status.value }}">{{ ticket_status_labels[t.status.value] }}</span>
+            </div>
+
+            <div class="tc-info-row">
+                <div class="tc-info-item">
+                    <div class="tc-info-label" data-i18n="lbl_visit_date_lbl">Дата визита</div>
+                    <div class="tc-info-val">{{ t.visit_date.strftime('%d.%m.%Y') }}</div>
+                </div>
+                <div class="tc-info-item">
+                    <div class="tc-info-label" data-i18n="lbl_time">Время</div>
+                    <div class="tc-info-val">{{ t.visit_date.strftime('%H:%M') }}</div>
+                </div>
+                <div class="tc-info-item">
+                    <div class="tc-info-label" data-i18n="lbl_cost">Стоимость</div>
+                    <div class="tc-info-val tc-price">{{ '%.0f'|format(t.price) }} ₸</div>
+                </div>
+                <div class="tc-info-item">
+                    <div class="tc-info-label">№</div>
+                    <div class="tc-info-val">#{{ '%04d'|format(t.id) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tc-bottom">
+            <div class="tc-qr-area">
+                <div class="tc-qr-visual">
+                    <div class="qr-grid">
+                        {% for i in range(16) %}
+                        <div class="qr-cell {% if i in [0,1,4,5,8,10,11,14,15,3,6,9,12,13,2,7] %}qr-dark{% endif %}"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="tc-qr-code">{{ t.qr_code }}</div>
+            </div>
+            <div class="tc-barcode">
+                {% for i in range(28) %}
+                <div class="bc-bar" style="height:{% if i % 3 == 0 %}100%{% elif i % 5 == 0 %}70%{% else %}85%{% endif %};width:{% if i % 4 == 0 %}2px{% else %}1px{% endif %}"></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state-full">
+    <img src="/static/icons/tickets.svg" alt="">
+    <h3>Билетов пока нет</h3>
+    <p>Забронируйте первый билет прямо сейчас</p>
+    <a href="/tickets/book" class="btn btn-primary" style="margin-top:var(--space-4);" data-i18n="btn_book_confirm">Забронировать</a>
+</div>
+{% endif %}
+
+{% endblock %}
