@@ -4305,35 +4305,42 @@ h1,h2,h3,h4,h5,h6 { color: #faf0dc !important; }
    Exhibit Detail Modal
    ============================================================ */
 .exhibit-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    background: rgba(10,6,2,0.75);
-    backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background: rgba(10,6,2,0.80);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     padding: 16px;
+    box-sizing: border-box;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.22s ease;
 }
 .exhibit-modal-overlay.open {
-    opacity: 1;
-    pointer-events: all;
+    opacity: 1 !important;
+    pointer-events: all !important;
 }
 .exhibit-modal-box {
     position: relative;
-    background: rgba(36,22,8,0.97);
-    border: 1px solid rgba(184,115,42,0.3);
+    background: rgba(36,22,8,0.98);
+    border: 1px solid rgba(184,115,42,0.35);
     border-radius: 20px;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    box-shadow: 0 32px 100px rgba(0,0,0,0.85);
     width: 100%;
-    max-width: 780px;
-    max-height: 90vh;
+    max-width: 760px;
+    max-height: 88vh;
     overflow-y: auto;
-    transform: translateY(24px) scale(0.97);
-    transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.26s cubic-bezier(0.34,1.4,0.64,1);
 }
 .exhibit-modal-overlay.open .exhibit-modal-box {
     transform: translateY(0) scale(1);
