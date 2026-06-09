@@ -29,6 +29,8 @@ from app.db.models import (
     UserRole,
 )
 from app.services.analytics_service import get_dashboard_stats
+import random
+import string
 
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory="app/templates")
@@ -175,6 +177,71 @@ def logout():
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie("access_token")
     return response
+
+
+@router.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_page(request: Request):
+    return _render("auth/forgot_password.html", _ctx(request, None))
+
+
+@router.post("/forgot-password", response_class=HTMLResponse)
+def forgot_password_submit(
+    request: Request,
+    email: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    db_user = db.query(User).filter(User.email == email).first()
+    if not db_user:
+        return _render(
+            "auth/forgot_password.html",
+            _ctx(request, None, error="Пользователь с таким email не найден"),
+        )
+    new_password = "".join(random.choices(string.ascii_letters + string.digits, k=10))
+    db_user.hashed_password = hash_password(new_password)
+    db.commit()
+    # Try to send via Telegram
+    try:
+        import os, httpx
+        bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
+        if bot_token and chat_id:
+            msg = f"🔑 NeoMuse — сброс пароля\n\nEmail: {email}\nНовый пароль: {new_password}\n\nВойдите и смените пароль в настройках."
+            httpx.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={"chat_id": chat_id, "text": msg},
+                timeout=5,
+            )
+    except Exception:
+        pass
+    return _render(
+        "auth/forgot_password.html",
+        _ctx(request, None, success=True, new_password=new_password),
+    )
+
+
+@router.get("/exhibits/{exhibit_id}/detail")
+def exhibit_detail_api(
+    exhibit_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    from fastapi.responses import JSONResponse
+    exhibit = db.get(Exhibit, exhibit_id)
+    if not exhibit:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    lang = get_lang(request)
+    return JSONResponse({
+        "id": exhibit.id,
+        "title": tfield(exhibit, "title", lang),
+        "description": tfield(exhibit, "description", lang),
+        "category": tfield(exhibit, "category", lang),
+        "period": tfield(exhibit, "period", lang),
+        "origin": exhibit.origin,
+        "condition_status": exhibit.condition_status,
+        "location_hall": exhibit.location_hall,
+        "is_available": exhibit.is_available,
+        "image_url": exhibit.image_url or "",
+    })
 
 
 def _require_login(user, roles=None):

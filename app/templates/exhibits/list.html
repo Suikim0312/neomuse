@@ -49,7 +49,7 @@
 <!-- Grid -->
 <div class="exhibit-grid">
     {% for e in exhibits %}
-    <div class="exhibit-card">
+    <div class="exhibit-card" onclick="openExhibitModal({{ e.id }})" style="cursor:pointer;">
         <div class="thumb">
             {% if e.image_url %}
             <img src="{{ e.image_url }}" alt="{{ e.title }}" loading="lazy">
@@ -73,7 +73,7 @@
                 </span>
             </div>
             {% if user.role.value in ['admin', 'manager'] %}
-            <div class="exhibit-card-actions">
+            <div class="exhibit-card-actions" onclick="event.stopPropagation()">
                 <a href="/exhibits/{{ e.id }}/edit" class="btn btn-sm btn-outline-primary" data-i18n="btn_edit">Изменить</a>
                 <form method="post" action="/exhibits/{{ e.id }}/delete" data-confirm="Удалить экспонат «{{ e.title }}»?">
                     <button type="submit" class="btn btn-sm btn-outline-danger" data-i18n="btn_delete">Удалить</button>
@@ -92,6 +92,18 @@
     {% endfor %}
 </div>
 
+<!-- Exhibit Detail Modal -->
+<div id="exhibitModal" class="exhibit-modal-overlay" onclick="closeExhibitModal(event)">
+    <div class="exhibit-modal-box">
+        <button class="exhibit-modal-close" onclick="closeExhibitModal()">&times;</button>
+        <div id="exhibitModalContent" class="exhibit-modal-inner">
+            <div class="exhibit-modal-loading">
+                <div class="modal-spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function toggleFilter() {
     const panel = document.getElementById('filterPanel');
@@ -102,5 +114,64 @@ function toggleFilter() {
 {% if search or selected_category %}
 document.getElementById('filterPanel').classList.add('open');
 {% endif %}
+
+async function openExhibitModal(id) {
+    const modal = document.getElementById('exhibitModal');
+    const content = document.getElementById('exhibitModalContent');
+    content.innerHTML = '<div class="exhibit-modal-loading"><div class="modal-spinner"></div></div>';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    try {
+        const res = await fetch('/exhibits/' + id + '/detail');
+        const d = await res.json();
+        const avail = d.is_available
+            ? '<span class="exhibit-avail avail-yes" data-i18n="lbl_available">Доступен</span>'
+            : '<span class="exhibit-avail avail-no" data-i18n="lbl_unavailable">Недоступен</span>';
+        content.innerHTML = `
+            <div class="em-image-wrap">
+                ${d.image_url
+                    ? `<img src="${d.image_url}" alt="${d.title}" class="em-image">`
+                    : `<div class="em-image-placeholder"><img src="/static/icons/museum.svg" alt=""></div>`}
+            </div>
+            <div class="em-body">
+                <div class="em-category">${d.category}</div>
+                <h2 class="em-title">${d.title}</h2>
+                <div class="em-meta-row">
+                    <div class="em-meta-item">
+                        <span class="em-meta-label" data-i18n="lbl_period">Период</span>
+                        <span class="em-meta-val">${d.period}</span>
+                    </div>
+                    <div class="em-meta-item">
+                        <span class="em-meta-label" data-i18n="lbl_origin">Происхождение</span>
+                        <span class="em-meta-val">${d.origin}</span>
+                    </div>
+                    <div class="em-meta-item">
+                        <span class="em-meta-label" data-i18n="lbl_hall">Зал</span>
+                        <span class="em-meta-val">${d.location_hall}</span>
+                    </div>
+                    <div class="em-meta-item">
+                        <span class="em-meta-label" data-i18n="lbl_condition">Состояние</span>
+                        <span class="em-meta-val">${d.condition_status}</span>
+                    </div>
+                </div>
+                <div class="em-desc">${d.description}</div>
+                <div class="em-footer">${avail}</div>
+            </div>
+        `;
+        if (window.applyLang) applyLang(window.getLang ? getLang() : 'ru');
+    } catch(e) {
+        content.innerHTML = '<p style="color:#f87171;padding:24px;">Ошибка загрузки</p>';
+    }
+}
+
+function closeExhibitModal(e) {
+    if (e && e.target !== document.getElementById('exhibitModal') && !e.target.closest('.exhibit-modal-close')) return;
+    document.getElementById('exhibitModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeExhibitModal({target: document.getElementById('exhibitModal')});
+});
 </script>
 {% endblock %}
