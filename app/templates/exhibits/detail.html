@@ -8,117 +8,107 @@
 {% endblock %}
 {% block content %}
 
-<div class="ed-layout">
-
-    <!-- LEFT: framed image + quick facts -->
-    <aside class="ed-aside">
-        <div class="ed-frame">
-            <div class="ed-frame-corner ed-fc-tl"></div>
-            <div class="ed-frame-corner ed-fc-tr"></div>
-            <div class="ed-frame-corner ed-fc-bl"></div>
-            <div class="ed-frame-corner ed-fc-br"></div>
+<!-- Hero block: photo + title side by side -->
+<div class="edv2-hero">
+    <!-- Photo in frame -->
+    <div class="edv2-frame-wrap">
+        <div class="edv2-frame">
+            <div class="edv2-fc edv2-fc-tl"></div>
+            <div class="edv2-fc edv2-fc-tr"></div>
+            <div class="edv2-fc edv2-fc-bl"></div>
+            <div class="edv2-fc edv2-fc-br"></div>
             {% if exhibit.image_url %}
-            <img src="{{ exhibit.image_url }}" alt="{{ tfield(exhibit, 'title', lang) }}" class="ed-photo">
+            <img src="{{ exhibit.image_url }}" alt="{{ tfield(exhibit, 'title', lang) }}" class="edv2-photo">
             {% else %}
-            <div class="ed-photo-placeholder"><img src="/static/icons/museum.svg" alt=""></div>
+            <div class="edv2-photo-placeholder"><img src="/static/icons/museum.svg" alt=""></div>
             {% endif %}
         </div>
+    </div>
 
-        <!-- Quick facts card -->
-        <div class="ed-facts-card">
-            <div class="ed-facts-title">
-                <span class="ed-gold-dot"></span>
-                <span data-i18n="lbl_quick_facts">Основные сведения</span>
-                <span class="ed-gold-dot"></span>
+    <!-- Title + quick facts -->
+    <div class="edv2-hero-info">
+        <span class="edv2-cat-tag">{{ tfield(exhibit, 'category', lang) }}</span>
+        <h1 class="edv2-title">{{ tfield(exhibit, 'title', lang) }}</h1>
+
+        <div class="edv2-facts-grid">
+            <div class="edv2-fact">
+                <span class="edv2-fact-lbl" data-i18n="lbl_period">Период</span>
+                <span class="edv2-fact-val">{{ tfield(exhibit, 'period', lang) }}</span>
             </div>
-            <div class="ed-fact-row">
-                <span class="ed-fact-label" data-i18n="lbl_period">Период</span>
-                <span class="ed-fact-val">{{ tfield(exhibit, 'period', lang) }}</span>
+            <div class="edv2-fact">
+                <span class="edv2-fact-lbl" data-i18n="lbl_origin">Происхождение</span>
+                <span class="edv2-fact-val">{{ exhibit.origin }}</span>
             </div>
-            <div class="ed-divider"></div>
-            <div class="ed-fact-row">
-                <span class="ed-fact-label" data-i18n="lbl_origin">Происхождение</span>
-                <span class="ed-fact-val">{{ exhibit.origin }}</span>
+            <div class="edv2-fact">
+                <span class="edv2-fact-lbl" data-i18n="lbl_hall">Зал</span>
+                <span class="edv2-fact-val">{{ exhibit.location_hall }}</span>
             </div>
-            <div class="ed-divider"></div>
-            <div class="ed-fact-row">
-                <span class="ed-fact-label" data-i18n="lbl_hall">Зал</span>
-                <span class="ed-fact-val">{{ exhibit.location_hall }}</span>
-            </div>
-            <div class="ed-divider"></div>
-            <div class="ed-fact-row">
-                <span class="ed-fact-label" data-i18n="lbl_condition">Состояние</span>
-                <span class="ed-fact-val">{{ exhibit.condition_status }}</span>
-            </div>
-            <div class="ed-divider"></div>
-            <div class="ed-fact-row">
-                <span class="ed-fact-label" data-i18n="lbl_category">Категория</span>
-                <span class="ed-fact-val">{{ tfield(exhibit, 'category', lang) }}</span>
-            </div>
-            <div class="ed-avail-row">
-                <span class="exhibit-avail {% if exhibit.is_available %}avail-yes{% else %}avail-no{% endif %}">
-                    {% if exhibit.is_available %}<span data-i18n="lbl_available">Доступен для осмотра</span>{% else %}<span data-i18n="lbl_unavailable">Временно недоступен</span>{% endif %}
-                </span>
+            <div class="edv2-fact">
+                <span class="edv2-fact-lbl" data-i18n="lbl_condition">Состояние</span>
+                <span class="edv2-fact-val">{{ exhibit.condition_status }}</span>
             </div>
         </div>
-    </aside>
 
-    <!-- RIGHT: main content -->
-    <main class="ed-main">
-        <div class="ed-category-tag">{{ tfield(exhibit, 'category', lang) }}</div>
-        <h1 class="ed-title">{{ tfield(exhibit, 'title', lang) }}</h1>
-
-        <!-- Decorative divider -->
-        <div class="ed-ornament">
-            <span class="ed-orn-line"></span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L14.09 8.26L20.63 8.27L15.45 12.14L17.54 18.4L12 14.54L6.46 18.4L8.55 12.14L3.37 8.27L9.91 8.26L12 2Z" fill="#b8732a" opacity="0.7"/></svg>
-            <span class="ed-orn-line"></span>
-        </div>
-
-        <!-- Description -->
-        <section class="ed-section">
-            <h3 class="ed-section-title" data-i18n="lbl_description">Описание</h3>
-            <p class="ed-desc">{{ tfield(exhibit, 'description', lang) }}</p>
-        </section>
-
-        {% if exhibit.history %}
-        <div class="ed-ornament"><span class="ed-orn-line"></span><span class="ed-orn-diamond"></span><span class="ed-orn-line"></span></div>
-        <section class="ed-section">
-            <h3 class="ed-section-title" data-i18n="lbl_history">История</h3>
-            <p class="ed-desc">{{ exhibit.history }}</p>
-        </section>
-        {% endif %}
-
-        {% if exhibit.significance %}
-        <div class="ed-ornament"><span class="ed-orn-line"></span><span class="ed-orn-diamond"></span><span class="ed-orn-line"></span></div>
-        <section class="ed-section">
-            <h3 class="ed-section-title" data-i18n="lbl_significance">Значение и ценность</h3>
-            <p class="ed-desc">{{ exhibit.significance }}</p>
-        </section>
-        {% endif %}
-
-        {% if exhibit.interesting_facts %}
-        <div class="ed-ornament"><span class="ed-orn-line"></span><span class="ed-orn-diamond"></span><span class="ed-orn-line"></span></div>
-        <section class="ed-section ed-facts-section">
-            <h3 class="ed-section-title" data-i18n="lbl_interesting_facts">Интересные факты</h3>
-            <ul class="ed-facts-list">
-                {% for fact in exhibit.interesting_facts.split('|') %}
-                <li class="ed-facts-list-item">{{ fact.strip() }}</li>
-                {% endfor %}
-            </ul>
-        </section>
-        {% endif %}
+        <span class="exhibit-avail {% if exhibit.is_available %}avail-yes{% else %}avail-no{% endif %}" style="margin-top:4px;display:inline-block;">
+            {% if exhibit.is_available %}<span data-i18n="lbl_available">Доступен</span>{% else %}<span data-i18n="lbl_unavailable">Недоступен</span>{% endif %}
+        </span>
 
         {% if user.role.value in ['admin', 'manager'] %}
-        <div class="ed-ornament"><span class="ed-orn-line"></span></div>
-        <div class="ed-admin-actions">
-            <a href="/exhibits/{{ exhibit.id }}/edit" class="btn btn-outline-primary" data-i18n="btn_edit">Изменить</a>
-            <form method="post" action="/exhibits/{{ exhibit.id }}/delete" data-confirm="Удалить экспонат «{{ exhibit.title }}»?">
-                <button type="submit" class="btn btn-outline-danger" data-i18n="btn_delete">Удалить</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+            <a href="/exhibits/{{ exhibit.id }}/edit" class="btn btn-sm btn-outline-primary" data-i18n="btn_edit">Изменить</a>
+            <form method="post" action="/exhibits/{{ exhibit.id }}/delete" data-confirm="Удалить «{{ exhibit.title }}»?">
+                <button type="submit" class="btn btn-sm btn-outline-danger" data-i18n="btn_delete">Удалить</button>
             </form>
         </div>
         {% endif %}
-    </main>
+    </div>
+</div>
+
+<!-- Content sections as cards -->
+<div class="edv2-cards">
+
+    <div class="edv2-card">
+        <div class="edv2-card-header">
+            <span class="edv2-card-icon">📜</span>
+            <span data-i18n="lbl_description">Описание</span>
+        </div>
+        <p class="edv2-card-text">{{ tfield(exhibit, 'description', lang) }}</p>
+    </div>
+
+    {% if exhibit.history %}
+    <div class="edv2-card">
+        <div class="edv2-card-header">
+            <span class="edv2-card-icon">🏛</span>
+            <span data-i18n="lbl_history">История</span>
+        </div>
+        <p class="edv2-card-text">{{ exhibit.history }}</p>
+    </div>
+    {% endif %}
+
+    {% if exhibit.significance %}
+    <div class="edv2-card">
+        <div class="edv2-card-header">
+            <span class="edv2-card-icon">⭐</span>
+            <span data-i18n="lbl_significance">Значение и ценность</span>
+        </div>
+        <p class="edv2-card-text">{{ exhibit.significance }}</p>
+    </div>
+    {% endif %}
+
+    {% if exhibit.interesting_facts %}
+    <div class="edv2-card edv2-card-facts">
+        <div class="edv2-card-header">
+            <span class="edv2-card-icon">💡</span>
+            <span data-i18n="lbl_interesting_facts">Интересные факты</span>
+        </div>
+        <ul class="edv2-facts-list">
+            {% for fact in exhibit.interesting_facts.split('|') %}
+            <li>{{ fact.strip() }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
 </div>
+
 {% endblock %}
