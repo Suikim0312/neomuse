@@ -92,18 +92,6 @@
     {% endfor %}
 </div>
 
-<!-- Exhibit Detail Modal -->
-<div id="exhibitModal" class="exhibit-modal-overlay">
-    <div class="exhibit-modal-box">
-        <button class="exhibit-modal-close" onclick="closeExhibitModal(); event.stopPropagation();">&times;</button>
-        <div id="exhibitModalContent" class="exhibit-modal-inner">
-            <div class="exhibit-modal-loading">
-                <div class="modal-spinner"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 function toggleFilter() {
     const panel = document.getElementById('filterPanel');
@@ -178,4 +166,18 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeExhibitModal();
 });
 </script>
+{% endblock %}
+
+{% block modals %}
+<!-- Exhibit Detail Modal — direct child of body, outside any transform context -->
+<div id="exhibitModal" class="exhibit-modal-overlay">
+    <div class="exhibit-modal-box">
+        <button class="exhibit-modal-close" onclick="closeExhibitModal(); event.stopPropagation();">&times;</button>
+        <div id="exhibitModalContent" class="exhibit-modal-inner">
+            <div class="exhibit-modal-loading">
+                <div class="modal-spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
