@@ -294,6 +294,22 @@ def exhibits_page(
     )
 
 
+@router.get("/exhibits/{exhibit_id}", response_class=HTMLResponse)
+def exhibit_detail(
+    exhibit_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user_optional),
+):
+    redirect = _require_login(user)
+    if redirect:
+        return redirect
+    exhibit = db.get(Exhibit, exhibit_id)
+    if not exhibit:
+        return RedirectResponse(url="/exhibits", status_code=303)
+    return _render("exhibits/detail.html", _ctx(request, user, exhibit=exhibit))
+
+
 @router.get("/exhibits/new", response_class=HTMLResponse)
 def exhibit_new(
     request: Request, user=Depends(get_current_user_optional)
