@@ -105,6 +105,9 @@ class Exhibit(Base):
     category_kz: Mapped[str | None] = mapped_column(String(120), nullable=True)
     period_en: Mapped[str | None] = mapped_column(String(120), nullable=True)
     period_kz: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    history: Mapped[str | None] = mapped_column(Text, nullable=True)
+    significance: Mapped[str | None] = mapped_column(Text, nullable=True)
+    interesting_facts: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class Ticket(Base):
